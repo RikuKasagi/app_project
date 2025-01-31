@@ -4,6 +4,8 @@ import streamlit as st
 from PIL import Image
 import os
 import datetime
+from io import BytesIO
+import zipfile
 
 def process_image(image, blur_value, canny_min, canny_max, kernel_size):
     """ひび検出処理"""
@@ -28,32 +30,20 @@ def process_image(image, blur_value, canny_min, canny_max, kernel_size):
     
     return morphed_color
 
-def save_results(original_image, processed_image, save_path, params):
-    """画像とパラメータを保存"""
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    save_folder = os.path.join(save_path, timestamp)
-    os.makedirs(save_folder, exist_ok=True)
+def create_zip(image_array, parameters_text, timestamp):
+    """処理後画像とパラメータを ZIP ファイルにまとめる"""
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        # 処理後画像を ZIP に追加
+        img_buffer = BytesIO()
+        Image.fromarray(image_array).save(img_buffer, format="PNG")
+        zip_file.writestr("processed_image.png", img_buffer.getvalue())
 
-    # 画像を保存
-    original_image_path = os.path.join(save_folder, "original.png")
-    processed_image_path = os.path.join(save_folder, "processed.png")
-    
-    original_image_pil = Image.fromarray(original_image)
-    processed_image_pil = Image.fromarray(processed_image)
+        # パラメータを ZIP に追加
+        zip_file.writestr("parameters.txt", parameters_text.strip())  # 空白削除
 
-    original_image_pil.save(original_image_path)
-    processed_image_pil.save(processed_image_path)
-
-    # パラメータを保存
-    param_path = os.path.join(save_folder, "parameters.txt")
-    with open(param_path, "w") as f:
-        f.write(f"GaussianBlur: {params['blur_value']}\n")
-        f.write(f"Canny Min: {params['canny_min']}\n")
-        f.write(f"Canny Max: {params['canny_max']}\n")
-        f.write(f"Kernel Size: {params['kernel_size']}\n")
-        f.write(f"Original Image Path: {params['original_path']}\n")
-
-    return save_folder
+    zip_buffer.seek(0)  # バッファのポインタを先頭にリセット
+    return zip_buffer
 
 # Streamlit UI
 st.set_page_config(layout="wide")  # ワイドレイアウト
@@ -93,25 +83,32 @@ if uploaded_file is not None:
         if kernel_slider != kernel_size:
             kernel_size = kernel_slider
 
-        # 保存先フォルダの指定
-        save_path = st.text_input("保存先フォルダを入力", value=os.getcwd())
-
-    # 画像処理（ここで処理しておく）
+    # 画像処理
     processed_image = process_image(image, blur_value, canny_min, canny_max, kernel_size)
 
     with col1:
-        # 保存ボタン（ディレクトリ設定のすぐ下に配置）
-        if st.button("保存"):
-            params = {
-                "blur_value": blur_value,
-                "canny_min": canny_min,
-                "canny_max": canny_max,
-                "kernel_size": kernel_size,
-                "original_path": uploaded_file.name
-            }
+        st.subheader("保存・ダウンロード")
 
-            saved_folder = save_results(image, processed_image, save_path, params)
-            st.success(f"保存完了！フォルダ: {saved_folder}")
+        # 現在の日時を取得
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        # パラメータのテキストデータを作成（空白削除）
+        params_text = f"""GaussianBlur: {blur_value}
+Canny Min: {canny_min}
+Canny Max: {canny_max}
+Kernel Size: {kernel_size}
+Original Image Path: {uploaded_file.name}"""
+
+        # ZIPファイルの作成
+        zip_buffer = create_zip(processed_image, params_text, timestamp)
+
+        # ZIP ダウンロードボタン（ファイル名にタイムスタンプを付与）
+        st.download_button(
+            label="処理後画像とパラメータをダウンロード (ZIP)",
+            data=zip_buffer,
+            file_name=f"processed_data_{timestamp}.zip",
+            mime="application/zip"
+        )
 
     with col2:
         st.subheader("処理後画像（元画像 + 処理後画像）")
