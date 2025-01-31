@@ -3,9 +3,10 @@ import numpy as np
 import streamlit as st
 from PIL import Image
 import os
+import datetime
 
 def process_image(image, blur_value, canny_min, canny_max, kernel_size):
-    # 画像をグレースケールに変換
+    """ひび検出処理"""
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # ガウシアンブラーの適用（奇数にする）
@@ -24,12 +25,38 @@ def process_image(image, blur_value, canny_min, canny_max, kernel_size):
 
     # 結果の結合
     morphed_color = cv2.cvtColor(morphed, cv2.COLOR_GRAY2BGR)
-    combined = np.hstack((image, morphed_color))
     
-    return combined
+    return morphed_color
+
+def save_results(original_image, processed_image, save_path, params):
+    """画像とパラメータを保存"""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    save_folder = os.path.join(save_path, timestamp)
+    os.makedirs(save_folder, exist_ok=True)
+
+    # 画像を保存
+    original_image_path = os.path.join(save_folder, "original.png")
+    processed_image_path = os.path.join(save_folder, "processed.png")
+    
+    original_image_pil = Image.fromarray(original_image)
+    processed_image_pil = Image.fromarray(processed_image)
+
+    original_image_pil.save(original_image_path)
+    processed_image_pil.save(processed_image_path)
+
+    # パラメータを保存
+    param_path = os.path.join(save_folder, "parameters.txt")
+    with open(param_path, "w") as f:
+        f.write(f"GaussianBlur: {params['blur_value']}\n")
+        f.write(f"Canny Min: {params['canny_min']}\n")
+        f.write(f"Canny Max: {params['canny_max']}\n")
+        f.write(f"Kernel Size: {params['kernel_size']}\n")
+        f.write(f"Original Image Path: {params['original_path']}\n")
+
+    return save_folder
 
 # Streamlit UI
-st.set_page_config(layout="wide")  # 全画面レイアウトを有効化
+st.set_page_config(layout="wide")  # ワイドレイアウト
 st.title("ひび検出アプリ")
 
 uploaded_file = st.file_uploader("画像をアップロードしてください", type=["png", "jpg", "jpeg"])
@@ -38,7 +65,6 @@ if uploaded_file is not None:
     # 画像の読み込み
     image = Image.open(uploaded_file)
     image = np.array(image)
-    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # OpenCV形式に変換
 
     # レイアウト設定
     col1, col2 = st.columns([1, 2])  # 左にスライダー、右に画像表示
@@ -67,9 +93,27 @@ if uploaded_file is not None:
         if kernel_slider != kernel_size:
             kernel_size = kernel_slider
 
-    # 画像処理
+        # 保存先フォルダの指定
+        save_path = st.text_input("保存先フォルダを入力", value=os.getcwd())
+
+    # 画像処理（ここで処理しておく）
     processed_image = process_image(image, blur_value, canny_min, canny_max, kernel_size)
 
+    with col1:
+        # 保存ボタン（ディレクトリ設定のすぐ下に配置）
+        if st.button("保存"):
+            params = {
+                "blur_value": blur_value,
+                "canny_min": canny_min,
+                "canny_max": canny_max,
+                "kernel_size": kernel_size,
+                "original_path": uploaded_file.name
+            }
+
+            saved_folder = save_results(image, processed_image, save_path, params)
+            st.success(f"保存完了！フォルダ: {saved_folder}")
+
     with col2:
-        st.subheader("結果表示")
-        st.image( processed_image, caption= "処理後画像", use_container_width=True)
+        st.subheader("処理後画像（元画像 + 処理後画像）")
+        combined_image = np.hstack((image, processed_image))  # 画像を横並びにする
+        st.image(combined_image, caption="処理後画像", use_container_width=True)
