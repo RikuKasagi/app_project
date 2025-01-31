@@ -45,6 +45,31 @@ def create_zip(image_array, parameters_text, timestamp):
     zip_buffer.seek(0)  # バッファのポインタを先頭にリセット
     return zip_buffer
 
+# コールバック関数を定義
+def update_blur_slider():
+    st.session_state.blur_slider = st.session_state.blur_input
+
+def update_blur_input():
+    st.session_state.blur_input = st.session_state.blur_slider
+
+def update_canny_min_slider():
+    st.session_state.canny_min_slider = st.session_state.canny_min_input
+
+def update_canny_min_input():
+    st.session_state.canny_min_input = st.session_state.canny_min_slider
+
+def update_canny_max_slider():
+    st.session_state.canny_max_slider = st.session_state.canny_max_input
+
+def update_canny_max_input():
+    st.session_state.canny_max_input = st.session_state.canny_max_slider
+
+def update_kernel_slider():
+    st.session_state.kernel_slider = st.session_state.kernel_input
+
+def update_kernel_input():
+    st.session_state.kernel_input = st.session_state.kernel_slider
+
 # Streamlit UI
 st.set_page_config(layout="wide")  # ワイドレイアウト
 st.title("ひび検出アプリ")
@@ -61,27 +86,35 @@ if uploaded_file is not None:
 
     with col1:
         st.subheader("パラメータ調整")
-        
-        # スライダー + 数値入力
-        blur_value = st.number_input("GaussianBlur", min_value=1, max_value=20, value=1, step=2)
-        blur_slider = st.slider("GaussianBlur", 1, 20, blur_value, step=2)
-        if blur_slider != blur_value:
-            blur_value = blur_slider
 
-        canny_min = st.number_input("Canny Min", min_value=0, max_value=500, value=50)
-        canny_min_slider = st.slider("Canny Min", 0, 500, canny_min)
-        if canny_min_slider != canny_min:
-            canny_min = canny_min_slider
+        # GaussianBlur
+        if "blur_input" not in st.session_state:
+            st.session_state.blur_input = 1
+            st.session_state.blur_slider = 1
+        blur_value = st.number_input("GaussianBlur", min_value=1, max_value=20, step=2, key="blur_input", on_change=lambda: setattr(st.session_state, 'blur_slider', st.session_state.blur_input))
+        st.slider("GaussianBlur", 1, 20, step=2, key="blur_slider", on_change=lambda: setattr(st.session_state, 'blur_input', st.session_state.blur_slider))
 
-        canny_max = st.number_input("Canny Max", min_value=0, max_value=500, value=150)
-        canny_max_slider = st.slider("Canny Max", 0, 500, canny_max)
-        if canny_max_slider != canny_max:
-            canny_max = canny_max_slider
+        # Canny Min
+        if "canny_min_input" not in st.session_state:
+            st.session_state.canny_min_input = 50
+            st.session_state.canny_min_slider = 50
+        canny_min = st.number_input("Canny Min", min_value=0, max_value=500, key="canny_min_input", on_change=lambda: setattr(st.session_state, 'canny_min_slider', st.session_state.canny_min_input))
+        st.slider("Canny Min", 0, 500, key="canny_min_slider", on_change=lambda: setattr(st.session_state, 'canny_min_input', st.session_state.canny_min_slider))
 
-        kernel_size = st.number_input("Kernel Size", min_value=1, max_value=20, value=1, step=2)
-        kernel_slider = st.slider("Kernel Size", 1, 20, kernel_size, step=2)
-        if kernel_slider != kernel_size:
-            kernel_size = kernel_slider
+        # Canny Max
+        if "canny_max_input" not in st.session_state:
+            st.session_state.canny_max_input = 150
+            st.session_state.canny_max_slider = 150
+        canny_max = st.number_input("Canny Max", min_value=0, max_value=500, key="canny_max_input", on_change=lambda: setattr(st.session_state, 'canny_max_slider', st.session_state.canny_max_input))
+        st.slider("Canny Max", 0, 500, key="canny_max_slider", on_change=lambda: setattr(st.session_state, 'canny_max_input', st.session_state.canny_max_slider))
+
+        # Kernel Size
+        if "kernel_input" not in st.session_state:
+            st.session_state.kernel_input = 1
+            st.session_state.kernel_slider = 1
+        kernel_size = st.number_input("Kernel Size", min_value=1, max_value=20, step=2, key="kernel_input", on_change=lambda: setattr(st.session_state, 'kernel_slider', st.session_state.kernel_input))
+        st.slider("Kernel Size", 1, 20, step=2, key="kernel_slider", on_change=lambda: setattr(st.session_state, 'kernel_input', st.session_state.kernel_slider))
+
 
     # 画像処理
     processed_image = process_image(image, blur_value, canny_min, canny_max, kernel_size)
