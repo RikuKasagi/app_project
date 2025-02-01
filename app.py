@@ -72,7 +72,7 @@ def update_kernel_input():
 
 # Streamlit UI
 st.set_page_config(layout="wide")  # ワイドレイアウト
-st.title("クラック検出アプリ created by Riku Kasagi")
+st.title("クラック検出アプリ")
 
 uploaded_file = st.file_uploader("画像をアップロードしてください", type=["png", "jpg", "jpeg"])
 
