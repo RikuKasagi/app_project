@@ -8,7 +8,7 @@ from io import BytesIO
 import zipfile
 
 def process_image(image, blur_value, canny_min, canny_max, kernel_size):
-    """ひび検出処理"""
+    """クラック検出処理"""
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # ガウシアンブラーの適用（奇数にする）
@@ -72,7 +72,7 @@ def update_kernel_input():
 
 # Streamlit UI
 st.set_page_config(layout="wide")  # ワイドレイアウト
-st.title("ひび検出アプリ")
+st.title("クラック検出アプリ created by Riku Kasagi")
 
 uploaded_file = st.file_uploader("画像をアップロードしてください", type=["png", "jpg", "jpeg"])
 
