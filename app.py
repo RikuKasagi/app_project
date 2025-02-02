@@ -100,12 +100,12 @@ if uploaded_files:
             
 
                     # 画像の結合
-                    h, w, _ = image.shape
-                    if w > h:
-                        combined_image = np.vstack((image, processed_image))
-                    else:
-                        combined_image = np.hstack((image, processed_image))
-                    # combined_image = np.hstack((image, processed_image))
+                    # h, w, _ = image.shape
+                    # if w > h:
+                    #     combined_image = np.vstack((image, processed_image))
+                    # else:
+                    #     combined_image = np.hstack((image, processed_image))
+                    combined_image = np.hstack((image, processed_image))
 
                     st.image(combined_image, caption=f"処理後画像: {uploaded_file.name}", use_container_width=True)
                     processed_images.append(processed_image)
