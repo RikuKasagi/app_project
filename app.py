@@ -93,10 +93,10 @@ if uploaded_files:
                     if image.shape[-1] == 4:
                         image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
                     
-                    processed_image = process_image(image, st.session_state.blur_input, 
-                                                    st.session_state.canny_min_input, 
-                                                    st.session_state.canny_max_input, 
-                                                    st.session_state.kernel_input)
+                    processed_image = process_image(image, st.session_state.Gaussianblur_input, 
+                                                    st.session_state.Canny_Min_input, 
+                                                    st.session_state.Canny_Max_input, 
+                                                    st.session_state.Kernel_Size_input)
             
 
                     # 画像の結合
