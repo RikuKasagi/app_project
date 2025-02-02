@@ -116,10 +116,10 @@ if uploaded_files:
             st.subheader("保存・ダウンロード")
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             parameters_text = f"""
-GaussianBlur: {st.session_state.blur_input}
-Canny Min: {st.session_state.canny_min_input}
-Canny Max: {st.session_state.canny_max_input}
-Kernel Size: {st.session_state.kernel_input}
+GaussianBlur: {st.session_state.GaussianBlur_input}
+Canny Min: {st.session_state.Canny_Min_input}
+Canny Max: {st.session_state.Canny_Max_input}
+Kernel Size: {st.session_state.Kernel_Size_input}
 Original Image Path: {', '.join(image_names)}""".strip()
             zip_buffer = create_zip(processed_images, parameters_text, image_names, timestamp)
             st.download_button("処理後画像とパラメータをダウンロード (ZIP)", data=zip_buffer, file_name=f"processed_data_{timestamp}.zip", mime="application/zip")
