@@ -71,7 +71,7 @@ if uploaded_files:
                 ("GaussianBlur", 1, 1, 20, 2),
                 ("Canny_Min", 50, 0, 500, 1),
                 ("Canny_Max", 150, 0, 500, 1),
-                ("kernel_Size", 1, 1, 20, 2)
+                ("Kernel_Size", 1, 1, 20, 2)
             ]:
                 if f"{var}_input" not in st.session_state:
                     st.session_state[f"{var}_input"] = default
