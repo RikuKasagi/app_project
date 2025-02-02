@@ -66,12 +66,12 @@ if uploaded_files:
         col1, col2 = st.columns([1, 3])
         
         with col1:
-            st.subheader("パラメータ調整")
+            st.subheader("パラメタ調整")
             for var, default, min_val, max_val, step in [
-                ("blur", 1, 1, 20, 2),
-                ("canny_min", 50, 0, 500, 1),
-                ("canny_max", 150, 0, 500, 1),
-                ("kernel", 1, 1, 20, 2)
+                ("GaussianBlur", 1, 1, 20, 2),
+                ("Canny_Min", 50, 0, 500, 1),
+                ("Canny_Max", 150, 0, 500, 1),
+                ("kernel_Size", 1, 1, 20, 2)
             ]:
                 if f"{var}_input" not in st.session_state:
                     st.session_state[f"{var}_input"] = default
