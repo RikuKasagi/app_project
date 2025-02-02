@@ -6,6 +6,7 @@ import os
 import datetime
 from io import BytesIO
 import zipfile
+from streamlit_javascript import st_javascript
 
 def process_image(image, blur_value, canny_min, canny_max, kernel_size):
     """クラック検出処理"""
@@ -54,6 +55,7 @@ st.set_page_config(layout="wide")
 st.title("クラック検出アプリ")
 
 uploaded_files = st.file_uploader("画像をアップロードしてください", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+window_width = st_javascript("window.innerWidth")
 
 if uploaded_files:
     tab_names = [uploaded_file.name for uploaded_file in uploaded_files]
@@ -95,15 +97,16 @@ if uploaded_files:
                                                     st.session_state.canny_min_input, 
                                                     st.session_state.canny_max_input, 
                                                     st.session_state.kernel_input)
-                    
-                    # 画像のリサイズ
-                    max_width = 1200
-                    scale_factor = max_width / max(image.shape[1], processed_image.shape[1])
-                    new_size = (int(image.shape[1] * scale_factor), int(image.shape[0] * scale_factor))
-                    image_resized = cv2.resize(image, new_size)
-                    processed_image_resized = cv2.resize(processed_image, new_size)
-                    
-                    combined_image = np.hstack((image, processed_image))
+            
+
+                    # 画像の結合
+                    h, w, _ = image.shape
+                    if w > h:
+                        combined_image = np.vstack((image, processed_image))
+                    else:
+                        combined_image = np.hstack((image, processed_image))
+                    # combined_image = np.hstack((image, processed_image))
+
                     st.image(combined_image, caption=f"処理後画像: {uploaded_file.name}", use_container_width=True)
                     processed_images.append(processed_image)
                     image_names.append(uploaded_file.name)
